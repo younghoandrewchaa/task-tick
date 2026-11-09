@@ -42,3 +42,7 @@ Deferred minor: if the primary is valid but the backup is malformed, a later val
 ## Follow-up: queued menu positioning
 
 The user ran native Playwright successfully outside the managed shell: four tests passed, and the long-list test caught a menu below the viewport before its queued `toggle` handler ran. A renderer regression reproduced the unpositioned state immediately after activation (RED). The summary activation now opens and positions the menu synchronously, while retaining the toggle handler for programmatic changes (GREEN, 28/28 tests). The original Playwright geometry assertion remains unchanged. A targeted rerun here still aborts at Electron launch (SIGABRT/EPERM), before reaching that assertion.
+
+## Follow-up: Playwright colour-scheme override
+
+The user's next native run passed menu bounds and drag reorder, then failed the dark-mode assertion. Playwright's Electron context defaults to a light colour-scheme override, preventing nativeTheme changes from reaching CSS media queries. The launch helper now sets `colorScheme: null` (documented as disabling emulation) so the renderer follows native Electron appearance. The existing light/dark renderer assertion is retained, with an additional nativeTheme.shouldUseDarkColors assertion to distinguish native state from CSS media state. Runtime confirmation still requires a normal macOS session outside this managed sandbox. No product code changed in this follow-up.

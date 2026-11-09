@@ -17,6 +17,8 @@ async function launch(packaged = false) {
   }
   env.TASKTICK_DATA_DIR = directory;
   app = await electron.launch({
+    // Follow Electron's nativeTheme rather than Playwright's default light override.
+    colorScheme: null,
     ...(packaged
       ? {
           executablePath: resolve(
@@ -209,6 +211,9 @@ test('long task lists scroll, menus stay in view, drag reorder works, and both t
     await app!.evaluate(({ nativeTheme }, theme) => {
       nativeTheme.themeSource = theme;
     }, theme);
+    await expect
+      .poll(() => app!.evaluate(({ nativeTheme }) => nativeTheme.shouldUseDarkColors))
+      .toBe(theme === 'dark');
     await expect
       .poll(() => page.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches))
       .toBe(theme === 'dark');
