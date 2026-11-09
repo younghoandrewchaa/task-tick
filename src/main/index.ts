@@ -10,7 +10,11 @@ import { registerIPC } from './ipc';
 import type { Snapshot } from '../shared/model';
 app.setName('TaskTick');
 // A separate data directory is useful for local development and smoke checks.
-if (process.env.TASKTICK_DATA_DIR) app.setPath('userData', resolve(process.env.TASKTICK_DATA_DIR));
+if (process.env.TASKTICK_DATA_DIR) {
+  const directory = resolve(process.env.TASKTICK_DATA_DIR);
+  mkdirSync(directory, { recursive: true, mode: 0o700 });
+  app.setPath('userData', directory);
+}
 let panel: TaskPanel | undefined;
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
