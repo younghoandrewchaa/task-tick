@@ -53,6 +53,7 @@ test('corrupt primary recovers last known good state and preserves evidence', as
 test('missing primary recovers backup instead of silently dropping tasks', async (t) => {
   const { dir, store } = await fixture(t);
   await store.save(sample());
+  await store.save(sample());
   await rm(join(dir, 'state.json'));
   const loaded = await store.load();
   assert.equal(loaded.state.tasks[0].sessionCount, 4);
@@ -83,6 +84,7 @@ test('write failure preserves existing valid state; invalid state cannot be save
 test('failure replacing primary does not erase backup', async (t) => {
   const { dir, store } = await fixture(t);
   await store.save(sample());
+  await store.save(sample());
   await rm(join(dir, 'state.json'));
   await mkdir(join(dir, 'state.json'));
   await assert.rejects(() => store.save(sample()));
@@ -90,4 +92,21 @@ test('failure replacing primary does not erase backup', async (t) => {
     JSON.parse(await readFile(join(dir, 'state.backup.json'), 'utf8')).tasks[0].sessionCount,
     4,
   );
+});
+
+test('a rejected first primary commit never reappears as a successful mutation after restart', async (t) => {
+  const { dir, store } = await fixture(t);
+  const fs = require('node:fs/promises') as typeof import('node:fs/promises');
+  const original = fs.rename;
+  t.mock.method(
+    fs,
+    'rename',
+    async (from: Parameters<typeof fs.rename>[0], to: Parameters<typeof fs.rename>[1]) => {
+      if (String(to) === join(dir, 'state.json'))
+        throw Object.assign(new Error('Disk full'), { code: 'ENOSPC' });
+      return original(from, to);
+    },
+  );
+  await assert.rejects(() => store.save(sample()), /Disk full/);
+  assert.deepEqual((await store.load()).state, emptyState());
 });

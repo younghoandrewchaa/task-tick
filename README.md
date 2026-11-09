@@ -38,9 +38,11 @@ Escape or clicking elsewhere hides the panel while the app stays in the menu bar
 - A running timer follows its saved wall-clock deadline, including sleep and time while the app is closed. A paused timer stays paused. Changing the system clock changes a running timer's remaining time.
 - A fully quit app cannot alert you. An overdue session is counted once on your next launch, with the task list opened then. Sleeping/locked computers surface the result on wake/unlock.
 - macOS controls notification banners, sound and Focus mode. Check **System Settings → Notifications → TaskTick**. TaskTick does not bypass Focus or lock-screen rules. The panel opens even if a notification cannot be delivered.
-- Normal app data lives in `~/Library/Application Support/TaskTick/`. `state.json` holds tasks/settings and at most one session. `state.backup.json` holds the last known good state (usually one saved change behind). Recovered corrupt originals are preserved as `state.corrupt-*.json`.
+- Normal app data lives in `~/Library/Application Support/TaskTick/`. `state.json` holds tasks/settings and at most one session. `state.backup.json` holds the last known good state (usually one saved change behind). Recovered corrupt primary originals are preserved as `state.corrupt-*.json`. A malformed backup may be replaced on a later valid save when the primary is readable. The initial backup is the previously committed empty state; subsequent backups are one saved change behind.
 - If both state and backup are unreadable, TaskTick reports the location and leaves them untouched. Save errors are visible and do not silently count an unsaved session.
 - Session credit is persisted before a notification is attempted. A crash between these steps can lose an alert, but does not duplicate credit.
+
+For offline packaging, `TASKTICK_ELECTRON_ZIP_DIR` can point to a directory containing the matching official Electron ZIP (`electron-v<version>-darwin-<arch>.zip`). Otherwise the packager downloads it normally.
 
 For an isolated development run, set `TASKTICK_DATA_DIR` to an absolute disposable directory. Never run two app builds against the same data directory.
 
@@ -50,8 +52,13 @@ For an isolated development run, set `TASKTICK_DATA_DIR` to an absolute disposab
 npm test
 npm run typecheck
 npm run build
+npm run test:e2e
+# Include the packaged-app launch check after packaging:
+TASKTICK_TEST_PACKAGED=1 npm run test:e2e
 ```
 
-The deterministic tests cover deadline boundaries, session counts, pause/resume, startup/wake reconciliation, stale actions, confirmation races, failed saves and corrupt-file recovery. Native behaviour must also be checked with the packaged app, especially notification sound, foreground activation over full-screen apps and Launch at login.
+The Playwright suite drives the actual Electron renderer and IPC with disposable data directories. It covers task editing, duration selection, ordering, complete/reopen/delete, pause/switch/discard, restart persistence, hidden-panel expiry, light/dark screenshots and optional packaged startup. Native notification delivery and modal responses are stubbed at the OS boundary; sound, Focus mode and full-screen activation still need native checks. Electron launch requires a normal macOS session; restricted shells that block WindowServer access can abort before tests reach any UI assertions.
+
+The deterministic tests include real renderer DOM regressions for failed duration saves, pending edits and cross-task rename drafts, and cover deadline boundaries, session counts, pause/resume, startup/wake reconciliation, stale actions, confirmation races, failed saves and corrupt-file recovery. Native behaviour must also be checked with the packaged app, especially notification sound, foreground activation over full-screen apps and Launch at login.
 
 See [design](docs/design.md) and [implementation plan](docs/implementation-plan.md).

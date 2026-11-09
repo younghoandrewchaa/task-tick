@@ -20,12 +20,24 @@ function error(message: string): void {
   el('error').textContent = message;
   el('error').hidden = !message;
 }
+function syncDurationControls(): void {
+  document.querySelectorAll<HTMLSelectElement>('.task-row select').forEach((select) => {
+    const taskId = (select.closest('.task-row') as HTMLElement).dataset.taskId;
+    const task = snapshot?.state.tasks.find((task) => task.id === taskId);
+    if (task) select.value = String(task.durationMinutes);
+    select.disabled = busy || snapshot?.state.session?.taskId === taskId;
+  });
+}
 function setBusy(value: boolean): void {
   busy = value;
+  syncDurationControls();
   el<HTMLButtonElement>('primary').disabled = value || !currentTask();
 }
 async function dispatch(action: Action): Promise<boolean> {
-  if (busy) return false;
+  if (busy) {
+    syncDurationControls();
+    return false;
+  }
   setBusy(true);
   error('');
   try {
@@ -249,6 +261,7 @@ function row(task: Task, completed = false): HTMLElement {
 function renderTasks(): void {
   if (!snapshot) return;
   const editing = document.querySelector<HTMLInputElement>('[data-edit]'),
+    draftTaskId = editing?.dataset.edit,
     draft = editing?.value,
     selection = editing?.selectionStart,
     hadFocus = document.activeElement === editing;
@@ -267,7 +280,8 @@ function renderTasks(): void {
   el('completed-count').textContent = String(completed.length);
   el('empty').hidden = active.length > 0;
   const replacement = document.querySelector<HTMLInputElement>('[data-edit]');
-  if (replacement && draft !== undefined) {
+  syncDurationControls();
+  if (replacement && replacement.dataset.edit === draftTaskId && draft !== undefined) {
     replacement.value = draft;
     if (hadFocus) {
       replacement.focus();

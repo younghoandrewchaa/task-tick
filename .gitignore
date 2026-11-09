@@ -3,3 +3,5 @@ dist/
 dist-test/
 out/
 .DS_Store
+test-results/
+playwright-report/

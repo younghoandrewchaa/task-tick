@@ -22,7 +22,7 @@ else {
   app.on('window-all-closed', () => {});
   void app.whenReady().then(async () => {
     app.dock?.hide();
-    Menu.setApplicationMenu(null);
+    Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }]));
     try {
       const store = new FileStateStore(app.getPath('userData'));
       const loaded = await store.load();

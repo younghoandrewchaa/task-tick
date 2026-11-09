@@ -64,7 +64,8 @@ export class FileStateStore implements StateStore {
     if (primary.kind === 'valid') await this.atomicWrite('state.backup.json', primary.state);
     else {
       const backup = await this.read('state.backup.json');
-      if (backup.kind !== 'valid') await this.atomicWrite('state.backup.json', valid);
+      // Before the first commit, the only committed truth is the empty state.
+      if (backup.kind !== 'valid') await this.atomicWrite('state.backup.json', emptyState());
     }
     await this.atomicWrite('state.json', valid);
   }
