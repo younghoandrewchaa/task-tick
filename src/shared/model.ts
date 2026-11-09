@@ -1,11 +1,34 @@
 export const DURATIONS = [15, 20, 25, 30] as const;
 export type Duration = (typeof DURATIONS)[number];
-export interface Task { id: string; title: string; durationMinutes: Duration; sessionCount: number; completedAt: number | null }
-interface SessionBase { id: string; taskId: string; durationMinutes: Duration }
-export type Session = SessionBase & ({ status: 'running'; deadline: number } | { status: 'paused'; remainingMs: number });
-export interface AppState { version: 1; tasks: Task[]; session: Session | null; settings: { launchAtLogin: boolean } }
-export interface Expiry { sessionId: string; taskId: string; taskTitle: string }
-export interface Transition { state: AppState; expired: Expiry | null }
+export interface Task {
+  id: string;
+  title: string;
+  durationMinutes: Duration;
+  sessionCount: number;
+  completedAt: number | null;
+}
+interface SessionBase {
+  id: string;
+  taskId: string;
+  durationMinutes: Duration;
+}
+export type Session = SessionBase &
+  ({ status: 'running'; deadline: number } | { status: 'paused'; remainingMs: number });
+export interface AppState {
+  version: 1;
+  tasks: Task[];
+  session: Session | null;
+  settings: { launchAtLogin: boolean };
+}
+export interface Expiry {
+  sessionId: string;
+  taskId: string;
+  taskTitle: string;
+}
+export interface Transition {
+  state: AppState;
+  expired: Expiry | null;
+}
 export type Action =
   | { type: 'add'; title: string }
   | { type: 'rename'; taskId: string; title: string }
@@ -16,7 +39,12 @@ export type Action =
   | { type: 'switch'; taskId: string; sessionId: string }
   | { type: 'pause' | 'resume' | 'discard'; sessionId: string }
   | { type: 'login'; enabled: boolean };
-export interface Snapshot { state: AppState; now: number; notice?: string; notificationStatus?: string }
+export interface Snapshot {
+  state: AppState;
+  now: number;
+  notice?: string;
+  notificationStatus?: string;
+}
 export type CommandResult = { ok: true; snapshot: Snapshot } | { ok: false; message: string };
 export interface TaskTickAPI {
   getSnapshot(): Promise<Snapshot>;

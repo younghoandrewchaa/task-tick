@@ -1,1 +1,15 @@
-{"extends":"./tsconfig.json","compilerOptions":{"rootDir":".","outDir":"dist-test"},"include":["src/core/**/*.ts","src/shared/**/*.ts","src/main/store.ts","tests/**/*.ts"],"exclude":[]}
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist-test"
+  },
+  "include": [
+    "src/core/**/*.ts",
+    "src/shared/**/*.ts",
+    "src/main/store.ts",
+    "tests/**/*.ts",
+    "src/main/commands.ts"
+  ],
+  "exclude": []
+}
