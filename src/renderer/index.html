@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'"
+    />
+    <title>TaskTick</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">✓</span>TaskTick<span
+            class="brand-dot"
+          ></span>
+        </div>
+        <button id="hide" class="icon-button" title="Hide panel (Esc)" aria-label="Hide panel">
+          −
+        </button>
+      </header>
+      <div id="error" class="message error" role="alert" hidden></div>
+      <div id="notice" class="message notice" role="status" hidden>
+        <span id="notice-text"></span
+        ><button id="dismiss-notice" class="icon-button" aria-label="Dismiss message">×</button>
+      </div>
+      <main id="workspace">
+        <section class="focus-card" aria-label="Focus timer">
+          <div class="eyebrow">
+            <span id="status-dot" class="status-dot"></span
+            ><span id="session-label">A LITTLE SPACE TO FOCUS</span>
+          </div>
+          <h1 id="focus-title">Your next small step.</h1>
+          <div id="timer" class="timer" aria-label="Time remaining">15<span>:</span>00</div>
+          <p id="timer-caption" class="timer-caption">Pick a task. Give it your attention.</p>
+          <div class="timer-actions">
+            <button id="primary" class="primary-button" disabled>
+              <span id="primary-icon" aria-hidden="true">▶</span
+              ><span id="primary-label">Start session</span></button
+            ><button id="discard" class="text-button" hidden>Discard</button>
+          </div>
+        </section>
+        <section class="tasks-section" aria-label="Active tasks">
+          <div class="section-heading">
+            <h2>Your tasks <span id="active-count" class="count">0</span></h2>
+            <span class="section-note">one session at a time</span>
+          </div>
+          <div id="tasks" class="task-list"></div>
+          <div id="empty" class="empty-state">
+            <div class="empty-icon" aria-hidden="true">＋</div>
+            <p>A clear list. A fresh start.</p>
+            <span>Add something you'd like to work on.</span>
+          </div>
+        </section>
+        <form id="add-form" class="add-form">
+          <span aria-hidden="true">＋</span
+          ><input
+            id="new-task"
+            aria-label="New task title"
+            placeholder="What would you like to work on?"
+            autocomplete="off"
+          /><button type="submit" class="add-button" aria-label="Add task" title="Add task">
+            ↵
+          </button>
+        </form>
+        <details id="completed" class="completed">
+          <summary>
+            <span class="chevron" aria-hidden="true">›</span>Completed<span
+              id="completed-count"
+              class="count"
+              >0</span
+            >
+          </summary>
+          <div id="completed-tasks" class="task-list"></div>
+        </details>
+      </main>
+      <section id="settings" class="settings" hidden>
+        <button id="back" class="text-button">← Back to tasks</button>
+        <h1>A few preferences.</h1>
+        <p class="settings-intro">Quietly working in your menu bar.</p>
+        <label class="setting-row"
+          ><span><strong>Launch at login</strong><small>Ready when your day begins.</small></span
+          ><input id="login" type="checkbox" role="switch"
+        /></label>
+        <div class="setting-block">
+          <strong>Notifications & sound</strong>
+          <p id="notification-status"></p>
+          <p class="hint">TaskTick also opens your task list when a session finishes.</p>
+        </div>
+        <div class="setting-block">
+          <strong>Saved on this Mac</strong>
+          <p>
+            Your tasks and sessions stay on this device. Running timers include sleep time; paused
+            timers stay paused.
+          </p>
+        </div>
+        <button id="quit" class="quit-button">Quit TaskTick</button>
+        <p class="hint">
+          A running session keeps its deadline. An overdue session is counted when you next open the
+          app.
+        </p>
+      </section>
+      <footer>
+        <span>Small steps, real progress.</span
+        ><button id="settings-button" class="icon-button" title="Settings" aria-label="Settings">
+          ⚙
+        </button>
+      </footer>
+    </div>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>
