@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-- `npm test`: 27 passing tests, 0 failures. Includes actual compiled renderer DOM tests and temporary-file persistence tests.
+- `npm test`: 28 passing tests, 0 failures. Includes actual compiled renderer DOM tests and temporary-file persistence tests.
 - `npm run typecheck`: main, isolated renderer and Playwright tests/config pass strict TypeScript checking.
 - `npm run test:e2e -- --list`: six Playwright Electron tests discovered.
 - `git diff --check`: clean.
@@ -38,3 +38,7 @@ Deferred minor: if the primary is valid but the backup is malformed, a later val
 - Packaging can use `TASKTICK_ELECTRON_ZIP_DIR` because sandbox DNS blocked a redundant Electron download; ordinary network-enabled packaging remains the default.
 - The shell sandbox blocked native development launch, so initial native smoke checks used a packaged disposable copy. Playwright was added when requested; process-launch restrictions prevented running its UI assertions here.
 - The initial backup is prior committed empty state. This prevents a rejected first edit from appearing after restart; recovering only the backup immediately after the first successful edit may return an empty list, consistent with backups being one saved change behind.
+
+## Follow-up: queued menu positioning
+
+The user ran native Playwright successfully outside the managed shell: four tests passed, and the long-list test caught a menu below the viewport before its queued `toggle` handler ran. A renderer regression reproduced the unpositioned state immediately after activation (RED). The summary activation now opens and positions the menu synchronously, while retaining the toggle handler for programmatic changes (GREEN, 28/28 tests). The original Playwright geometry assertion remains unchanged. A targeted rerun here still aborts at Electron launch (SIGABRT/EPERM), before reaching that assertion.

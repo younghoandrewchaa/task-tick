@@ -111,3 +111,31 @@ test('opening another rename never transfers the previous task draft', async (t)
   assert.equal(f.document.querySelector<HTMLInputElement>('[data-edit="b"]')!.value, 'Beta');
   assert.equal(f.service.snapshot().state.tasks[1].title, 'Beta');
 });
+test('row menus are positioned inside the viewport during activation, before the queued toggle event', async (t) => {
+  const f = await fixture(t);
+  Object.defineProperty(f.window, 'innerHeight', { value: 690 });
+  Object.defineProperty(f.window, 'innerWidth', { value: 420 });
+  const menu = f.document.querySelector<HTMLDetailsElement>('.row-menu')!;
+  const summary = menu.querySelector('summary')!;
+  const items = menu.querySelector<HTMLElement>('.menu-items')!;
+  // Layout measurements are supplied because jsdom does not perform layout.
+  // Keep the real activation handler, menu element and positioning code.
+  summary.getBoundingClientRect = () => ({
+    x: 370,
+    y: 625,
+    left: 370,
+    top: 625,
+    right: 391,
+    bottom: 650,
+    width: 21,
+    height: 25,
+    toJSON: () => ({}),
+  });
+  Object.defineProperty(items, 'offsetHeight', { value: 120 });
+  summary.click();
+  assert.equal(menu.open, true);
+  assert.notEqual(items.style.top, '');
+  assert.ok(Number.parseFloat(items.style.top) + items.offsetHeight <= f.window.innerHeight);
+  summary.click();
+  assert.equal(menu.open, false);
+});

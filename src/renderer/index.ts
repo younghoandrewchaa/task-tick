@@ -209,7 +209,7 @@ function row(task: Task, completed = false): HTMLElement {
   }
   menuItem(items, 'Delete task', () => void dispatch({ type: 'delete', taskId: task.id }), true);
   menu.append(summary, items);
-  menu.addEventListener('toggle', () => {
+  const positionMenu = (): void => {
     if (!menu.open) return;
     document.querySelectorAll<HTMLDetailsElement>('.row-menu[open]').forEach((other) => {
       if (other !== menu) other.open = false;
@@ -217,7 +217,15 @@ function row(task: Task, completed = false): HTMLElement {
     const bounds = summary.getBoundingClientRect();
     items.style.left = `${Math.max(8, Math.min(bounds.right - 140, window.innerWidth - 148))}px`;
     items.style.top = `${Math.max(8, Math.min(bounds.bottom + 5, window.innerHeight - items.offsetHeight - 10))}px`;
+  };
+  summary.addEventListener('click', (event) => {
+    // The native toggle event is queued after opening. Position in the same
+    // activation turn so the menu never appears at its unpositioned location.
+    event.preventDefault();
+    menu.open = !menu.open;
+    positionMenu();
   });
+  menu.addEventListener('toggle', positionMenu);
   actions.append(menu);
   wrapper.append(actions);
   if (!completed) {
