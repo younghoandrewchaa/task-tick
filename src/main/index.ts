@@ -1,5 +1,6 @@
 import { app, dialog, powerMonitor, Menu } from 'electron';
 import { randomUUID } from 'node:crypto';
+import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { TaskService } from '../core/service';
 import { FileStateStore } from './store';
