@@ -138,7 +138,11 @@ export class TaskPanel {
       this.show();
     }
   }
-  async confirm(message: string, detail: string): Promise<boolean> {
+  /** Lets the window close during a quit that macOS starts before `before-quit`, such as an update restart. */
+  setQuitting(value: boolean): void {
+    this.quitting = value;
+  }
+  async confirm(message: string, detail: string, confirmLabel?: string): Promise<boolean> {
     this.show();
     this.dialogOpen = true;
     try {
@@ -155,6 +159,7 @@ export class TaskPanel {
           : message.startsWith('Discard')
             ? { buttons: ['Cancel', 'Discard session'] }
             : {}),
+        ...(confirmLabel ? { buttons: ['Cancel', confirmLabel] } : {}),
       });
       return result.response === 1;
     } finally {

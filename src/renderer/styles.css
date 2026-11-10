@@ -512,6 +512,41 @@ footer {
   font-size: 9px;
   letter-spacing: 0.15px;
 }
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.version {
+  font-variant-numeric: tabular-nums;
+  margin-right: 4px;
+}
+.update-button {
+  color: var(--accent);
+  font-size: 15px;
+}
+.update-button:disabled {
+  cursor: default;
+}
+.update-button.busy {
+  animation: update-pulse 1.4s ease-in-out infinite;
+}
+.update-button.error {
+  background: none;
+  color: var(--danger);
+  font-weight: 700;
+}
+@keyframes update-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .update-button.busy {
+    animation: none;
+    opacity: 0.6;
+  }
+}
 .message {
   font-size: 11px;
   line-height: 1.4;

@@ -1,4 +1,4 @@
-import type { Action, Snapshot, Task, TaskTickAPI } from '../shared/model';
+import type { Action, Snapshot, Task, TaskTickAPI, UpdateState } from '../shared/model';
 declare global {
   interface Window {
     tasktick: TaskTickAPI;
@@ -335,6 +335,31 @@ function renderTimer(): void {
   el<HTMLButtonElement>('primary').disabled = busy || !task;
   el('discard').hidden = !session;
 }
+function renderUpdate(update: UpdateState | undefined): void {
+  const version = el('version'),
+    button = el<HTMLButtonElement>('update');
+  version.hidden = !update;
+  version.textContent = update ? `v${update.version}` : '';
+  const status = update?.status;
+  const latest = `v${update?.latestVersion ?? ''}`;
+  const label =
+    status === 'available'
+      ? `Update to ${latest}`
+      : status === 'confirming' || status === 'downloading'
+        ? `Downloading ${latest}…`
+        : status === 'installing'
+          ? 'Restarting…'
+          : status === 'error'
+            ? (update?.message ?? 'Update failed. Click to try again.')
+            : '';
+  button.hidden = !label;
+  button.disabled = status === 'confirming' || status === 'downloading' || status === 'installing';
+  button.textContent = status === 'error' ? '!' : '⤓';
+  button.title = label;
+  button.setAttribute('aria-label', label);
+  button.classList.toggle('busy', button.disabled);
+  button.classList.toggle('error', status === 'error');
+}
 function accept(next: Snapshot): void {
   snapshot = next;
   const key = JSON.stringify(next.state);
@@ -349,7 +374,9 @@ function accept(next: Snapshot): void {
   const notice = next.notice ?? '';
   el('notice-text').textContent = notice;
   el('notice').hidden = !notice || notice === dismissedNotice;
+  renderUpdate(next.update);
 }
+el('update').addEventListener('click', () => void api.installUpdate());
 el('primary').addEventListener('click', () => {
   const s = snapshot?.state.session,
     task = currentTask();

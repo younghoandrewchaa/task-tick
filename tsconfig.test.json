@@ -8,6 +8,7 @@
     "src/core/**/*.ts",
     "src/shared/**/*.ts",
     "src/main/store.ts",
+    "src/main/updates.ts",
     "tests/**/*.ts",
     "src/main/commands.ts"
   ],

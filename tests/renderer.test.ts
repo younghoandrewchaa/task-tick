@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { JSDOM } from 'jsdom';
 import { emptyState } from '../src/core/state';
 import { TaskService } from '../src/core/service';
-import type { Snapshot, TaskTickAPI } from '../src/shared/model';
+import type { Snapshot, TaskTickAPI, UpdateState } from '../src/shared/model';
 async function until(predicate: () => boolean) {
   const deadline = Date.now() + 3000;
   while (!predicate()) {
@@ -25,6 +25,7 @@ async function fixture(t: { after(fn: () => void): void }) {
     { id: 'b', title: 'Beta', durationMinutes: 15, sessionCount: 0, completedAt: null },
   ];
   let fail = false,
+    installs = 0,
     hold = false,
     release: (() => void) | undefined;
   const listeners = new Set<(s: Snapshot) => void>();
@@ -62,6 +63,9 @@ async function fixture(t: { after(fn: () => void): void }) {
     },
     hidePanel: async () => {},
     quit: async () => {},
+    installUpdate: async () => {
+      installs++;
+    },
   };
   Object.assign(dom.window, { tasktick: api });
   const code = (await readFile(resolve('dist/renderer/index.js'), 'utf8')).replace(
@@ -82,6 +86,9 @@ async function fixture(t: { after(fn: () => void): void }) {
     },
     release: () => release?.(),
     isWaiting: () => release !== undefined,
+    installs: () => installs,
+    pushUpdate: (update: UpdateState) =>
+      listeners.forEach((listener) => listener({ ...service.snapshot(), update })),
   };
 }
 test('a failed duration save restores the authoritative preset before starting', async (t) => {
@@ -138,4 +145,36 @@ test('row menus are positioned inside the viewport during activation, before the
   assert.ok(Number.parseFloat(items.style.top) + items.offsetHeight <= f.window.innerHeight);
   summary.click();
   assert.equal(menu.open, false);
+});
+test('footer shows the version and hides the update icon when up to date', async (t) => {
+  const f = await fixture(t);
+  f.pushUpdate({ version: '0.2.0', status: 'idle' });
+  await until(() => f.document.getElementById('version')?.textContent === 'v0.2.0');
+  assert.equal(f.document.getElementById('version')!.hidden, false);
+  assert.equal(f.document.getElementById('update')!.hidden, true);
+});
+test('update icon appears when a newer version is available and installs on click', async (t) => {
+  const f = await fixture(t);
+  f.pushUpdate({ version: '0.2.0', status: 'available', latestVersion: '0.3.0' });
+  const update = f.document.getElementById('update') as HTMLButtonElement;
+  await until(() => update && !update.hidden);
+  assert.equal(update.title, 'Update to v0.3.0');
+  assert.equal(update.getAttribute('aria-label'), 'Update to v0.3.0');
+  update.click();
+  assert.equal(f.installs(), 1);
+});
+test('update icon is disabled while downloading and shows errors as its tooltip', async (t) => {
+  const f = await fixture(t);
+  f.pushUpdate({ version: '0.2.0', status: 'downloading', latestVersion: '0.3.0' });
+  const update = f.document.getElementById('update') as HTMLButtonElement;
+  await until(() => update && !update.hidden);
+  assert.equal(update.disabled, true);
+  assert.ok(update.classList.contains('busy'));
+  assert.equal(update.title, 'Downloading v0.3.0…');
+  const message = 'Update failed. Click to try again.';
+  f.pushUpdate({ version: '0.2.0', status: 'error', latestVersion: '0.3.0', message });
+  await until(() => update.title === message);
+  assert.equal(update.disabled, false);
+  assert.ok(update.classList.contains('error'));
+  assert.ok(!update.classList.contains('busy'));
 });

@@ -44,6 +44,21 @@ export interface Snapshot {
   now: number;
   notice?: string;
   notificationStatus?: string;
+  update?: UpdateState;
+}
+export interface UpdateState {
+  version: string;
+  status:
+    | 'disabled'
+    | 'idle'
+    | 'checking'
+    | 'available'
+    | 'confirming'
+    | 'downloading'
+    | 'installing'
+    | 'error';
+  latestVersion?: string;
+  message?: string;
 }
 export type CommandResult = { ok: true; snapshot: Snapshot } | { ok: false; message: string };
 export interface TaskTickAPI {
@@ -52,6 +67,7 @@ export interface TaskTickAPI {
   onSnapshot(listener: (snapshot: Snapshot) => void): () => void;
   hidePanel(): Promise<void>;
   quit(): Promise<void>;
+  installUpdate(): Promise<void>;
 }
 export interface StateStore {
   load(): Promise<{ state: AppState; warning?: string }>;

@@ -4,10 +4,12 @@ import { join } from 'node:path';
 import type { Snapshot } from '../shared/model';
 import type { TaskPanel } from './panel';
 import type { CommandController } from './commands';
+import type { UpdateManager } from './updates';
 export function registerIPC(
   panel: TaskPanel,
   commands: CommandController,
   snapshot: () => Snapshot,
+  updates: UpdateManager,
 ): void {
   const documentURL = pathToFileURL(join(__dirname, '../renderer/index.html')).href;
   const trust = (event: IpcMainInvokeEvent) => {
@@ -29,6 +31,10 @@ export function registerIPC(
   ipcMain.handle('tasktick:hide', (event) => {
     trust(event);
     panel.hide();
+  });
+  ipcMain.handle('tasktick:install-update', (event) => {
+    trust(event);
+    return updates.install();
   });
   ipcMain.handle('tasktick:quit', (event) => {
     trust(event);

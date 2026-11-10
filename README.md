@@ -21,7 +21,21 @@ npm run package
 open out/TaskTick-darwin-arm64/TaskTick.app
 ```
 
-The output uses the current machine's architecture (`arm64` on Apple Silicon; `x64` on Intel). Copy the app to Applications if desired. This is a local, unsigned build, not a notarized public release. Enable **Launch at login** from the packaged app after moving it to its permanent location; development runs do not register Electron itself as a login item.
+The output uses the current machine's architecture (`arm64` on Apple Silicon; `x64` on Intel). Copy the app to Applications if desired. This is a local, unsigned build; use the release steps below for a signed build that can update itself. Enable **Launch at login** from the packaged app after moving it to its permanent location; development runs do not register Electron itself as a login item.
+
+## Releases and updates
+
+The panel footer shows the installed version. Once a day the packaged app reads `update-darwin-arm64.json` from `https://github.com/younghoandrewchaa/task-tick/releases/latest/download/` (the website link, not the rate-limited GitHub API). When a newer version exists, an update icon appears next to the version. Clicking it asks for confirmation, downloads the update, installs it and restarts TaskTick. A running session keeps its deadline across the restart. Failed background checks stay quiet and retry within an hour. Updates are Apple Silicon only and are off in development runs and when `TASKTICK_DATA_DIR` is set.
+
+To publish a release, bump `version` in `package.json`, commit, then on an Apple Silicon Mac run:
+
+```sh
+npm run release -- "What changed"
+```
+
+The script runs the checks, signs and notarises the app with your Developer ID (`APPLE_SIGN_IDENTITY` optional; `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD` and `APPLE_TEAM_ID`, or the keychain profile in `APPLE_KEYCHAIN_PROFILE`, default `m-note`), zips it as `TaskTick-darwin-arm64-<version>.zip`, writes the update manifest, tags `v<version>` and publishes both files as the latest GitHub release.
+
+First install: download the ZIP from the latest release, double-click it, and move `TaskTick.app` to Applications. Later versions install themselves. Builds older than 0.2.0 are unsigned and cannot update themselves.
 
 ## Use
 
