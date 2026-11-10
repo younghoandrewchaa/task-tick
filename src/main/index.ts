@@ -1,7 +1,7 @@
 import { app, autoUpdater, dialog, net, powerMonitor, Menu } from 'electron';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { TaskService } from '../core/service';
 import { FileStateStore } from './store';
 import { TaskPanel } from './panel';
@@ -69,7 +69,8 @@ else {
         },
       });
       const updater = new UpdateManager({
-        version: app.getVersion(),
+        // Read our own package.json: app.getVersion() reports Electron's version when launched from another folder.
+        version: JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8')).version,
         enabled:
           app.isPackaged &&
           process.platform === 'darwin' &&
