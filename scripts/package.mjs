@@ -1,4 +1,19 @@
 import { packager } from '@electron/packager';
+import { closeSync, openSync, readSync, statSync } from 'node:fs';
+
+// Thin and universal Mach-O headers, in either byte order.
+const machOMagic = new Set([
+  0xfeedface, 0xfeedfacf, 0xcefaedfe, 0xcffaedfe, 0xcafebabe, 0xbebafeca,
+]);
+function isMachO(file) {
+  const fd = openSync(file, 'r');
+  try {
+    const header = Buffer.alloc(4);
+    return readSync(fd, header, 0, 4, 0) === 4 && machOMagic.has(header.readUInt32BE(0));
+  } finally {
+    closeSync(fd);
+  }
+}
 
 // Release builds are signed and notarised so Squirrel.Mac can install updates.
 const release = process.env.TASKTICK_RELEASE === '1';
@@ -12,8 +27,9 @@ const signing = release
   ? {
       osxSign: {
         ...(env.APPLE_SIGN_IDENTITY ? { identity: env.APPLE_SIGN_IDENTITY } : {}),
-        // Locale data is sealed by the framework signature; skip individual signatures.
-        ignore: /\/Resources\/[^/]+\.lproj\/locale\.pak$/,
+        // Sign only executable code. Resources (.pak, .dat, .png, ...) are sealed by their
+        // bundle's signature and should not carry signatures of their own.
+        ignore: (file) => statSync(file).isFile() && !isMachO(file),
       },
       osxNotarize: env.APPLE_ID
         ? { appleId: env.APPLE_ID, appleIdPassword: password, teamId: env.APPLE_TEAM_ID }
