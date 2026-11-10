@@ -62,6 +62,7 @@ async function fixture(t: { after(fn: () => void): void }) {
     },
     hidePanel: async () => {},
     quit: async () => {},
+    installUpdate: async () => {},
   };
   Object.assign(dom.window, { tasktick: api });
   const code = (await readFile(resolve('dist/renderer/index.js'), 'utf8')).replace(
