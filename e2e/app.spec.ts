@@ -220,6 +220,12 @@ test('long task lists scroll, menus stay in view, drag reorder works, and both t
     await page.screenshot({ path: `test-results/tasktick-${theme}.png` });
   }
 });
+test('development builds report their version with updates disabled', async () => {
+  await launch();
+  const { update } = await snapshot();
+  expect(update).toEqual({ version: expect.stringMatching(/^\d+\.\d+\.\d+$/), status: 'disabled' });
+  expect(await page.evaluate(() => typeof window.tasktick.installUpdate)).toBe('function');
+});
 test('packaged app loads its preload and assets outside the repository and reconciles overdue startup', async () => {
   test.skip(
     !process.env.TASKTICK_TEST_PACKAGED,
