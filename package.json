@@ -1,7 +1,7 @@
 {
   "name": "tasktick",
   "productName": "TaskTick",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "A quiet place for your tasks and focused time.",
   "main": "dist/main/index.js",
@@ -12,7 +12,8 @@
     "test": "npm run build && tsc -p tsconfig.test.json && node --test dist-test/tests/*.test.js",
     "package": "npm run build && node scripts/package.mjs",
     "test:e2e": "npm run build && playwright test",
-    "format": "prettier --write src tests e2e scripts *.json playwright.config.ts"
+    "format": "prettier --write src tests e2e scripts *.json playwright.config.ts",
+    "release": "bash scripts/release.sh"
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",
