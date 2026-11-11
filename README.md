@@ -25,7 +25,7 @@ The output uses the current machine's architecture (`arm64` on Apple Silicon; `x
 
 ## Releases and updates
 
-The panel footer shows the installed version. Once a day the packaged app reads `update-darwin-arm64.json` from `https://github.com/younghoandrewchaa/task-tick/releases/latest/download/` (the website link, not the rate-limited GitHub API). When a newer version exists, an update icon appears next to the version. Clicking it asks for confirmation, downloads the update, installs it and restarts TaskTick. A running session keeps its deadline across the restart. Failed background checks stay quiet and retry within an hour. Updates are Apple Silicon only and are off in development runs and when `TASKTICK_DATA_DIR` is set.
+The panel footer shows the installed version. Once a day the packaged app reads `update-darwin-arm64.json` from `https://github.com/younghoandrewchaa/task-tick/releases/latest/download/` (the website link, not the rate-limited GitHub API). Click the check icon next to the version at any time to check immediately, bypassing the daily cooldown. The panel reports when TaskTick is up to date or a manual check fails. When a newer version exists, the icon changes to a download icon. Clicking it asks for confirmation, downloads the update, installs it and restarts TaskTick. A running session keeps its deadline across the restart. Failed background checks stay quiet and retry within an hour. Updates are Apple Silicon only and are off in development runs and when `TASKTICK_DATA_DIR` is set.
 
 To publish a release, bump `version` in `package.json`, commit, then on an Apple Silicon Mac run:
 

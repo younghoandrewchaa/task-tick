@@ -26,6 +26,7 @@ async function fixture(t: { after(fn: () => void): void }) {
   ];
   let fail = false,
     installs = 0,
+    checks = 0,
     hold = false,
     release: (() => void) | undefined;
   const listeners = new Set<(s: Snapshot) => void>();
@@ -64,6 +65,9 @@ async function fixture(t: { after(fn: () => void): void }) {
     hidePanel: async () => {},
     fitPanel: async () => {},
     quit: async () => {},
+    checkForUpdates: async () => {
+      checks++;
+    },
     installUpdate: async () => {
       installs++;
     },
@@ -88,6 +92,7 @@ async function fixture(t: { after(fn: () => void): void }) {
     release: () => release?.(),
     isWaiting: () => release !== undefined,
     installs: () => installs,
+    checks: () => checks,
     pushUpdate: (update: UpdateState) =>
       listeners.forEach((listener) => listener({ ...service.snapshot(), update })),
   };
@@ -147,12 +152,16 @@ test('row menus are positioned inside the viewport during activation, before the
   summary.click();
   assert.equal(menu.open, false);
 });
-test('footer shows the version and hides the update icon when up to date', async (t) => {
+test('footer shows the version and a manual check button when up to date', async (t) => {
   const f = await fixture(t);
   f.pushUpdate({ version: '0.2.0', status: 'idle' });
   await until(() => f.document.getElementById('version')?.textContent === 'v0.2.0');
   assert.equal(f.document.getElementById('version')!.hidden, false);
-  assert.equal(f.document.getElementById('update')!.hidden, true);
+  assert.equal(f.document.getElementById('update')!.hidden, false);
+  assert.equal(f.document.getElementById('update')!.title, 'Check for updates');
+  f.document.getElementById('update')!.click();
+  assert.equal(f.checks(), 1);
+  assert.equal(f.installs(), 0);
 });
 test('update icon appears when a newer version is available and installs on click', async (t) => {
   const f = await fixture(t);
@@ -178,4 +187,39 @@ test('update icon is disabled while downloading and shows errors as its tooltip'
   assert.equal(update.disabled, false);
   assert.ok(update.classList.contains('error'));
   assert.ok(!update.classList.contains('busy'));
+});
+
+test('checking disables the update button and results are announced', async (t) => {
+  const f = await fixture(t);
+  f.pushUpdate({ version: '0.2.0', status: 'checking' });
+  const button = f.document.getElementById('update') as HTMLButtonElement;
+  assert.equal(button.hidden, false);
+  assert.equal(button.disabled, true);
+  assert.equal(button.title, 'Checking for updates…');
+  f.pushUpdate({ version: '0.2.0', status: 'idle', message: 'TaskTick is up to date.' });
+  assert.equal(f.document.getElementById('update-status')?.textContent, 'TaskTick is up to date.');
+  assert.equal(button.disabled, false);
+});
+
+test('a failed manual check retries checking instead of installing', async (t) => {
+  const f = await fixture(t);
+  f.pushUpdate({
+    version: '0.2.0',
+    status: 'error',
+    message: 'Could not check for updates. Click to try again.',
+  });
+  f.document.getElementById('update')!.click();
+  assert.equal(f.checks(), 1);
+  assert.equal(f.installs(), 0);
+});
+
+test('disabled builds show why the update button is unavailable', async (t) => {
+  const f = await fixture(t);
+  f.pushUpdate({ version: '0.2.0', status: 'disabled' });
+  const button = f.document.getElementById('update') as HTMLButtonElement;
+  assert.equal(button.hidden, false);
+  assert.equal(button.disabled, true);
+  assert.equal(button.title, 'Updates are unavailable in this build');
+  button.click();
+  assert.equal(f.checks(), 0);
 });

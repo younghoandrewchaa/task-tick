@@ -124,20 +124,26 @@ export class UpdateManager {
     this.options.publish(this.getState());
   }
 
-  /** Fetches the manifest at most once per day; failures stay quiet and retry next time. */
-  async check(): Promise<void> {
+  /** Background checks run at most once per day; manual checks bypass the cooldown. */
+  async check(manual = false): Promise<void> {
     if (!this.options.enabled || this.busy || this.downloaded) return;
     const now = (this.options.now ?? Date.now)();
-    if (now - this.lastCheck < CHECK_COOLDOWN_MS) return;
+    if (!manual && now - this.lastCheck < CHECK_COOLDOWN_MS) return;
     this.lastCheck = now;
     this.setState('checking');
     try {
       this.candidate = selectRelease(await this.options.fetchRelease(), this.options.version);
-      this.setState(this.candidate ? 'available' : 'idle');
+      this.setState(
+        this.candidate ? 'available' : 'idle',
+        manual && !this.candidate ? 'TaskTick is up to date.' : undefined,
+      );
     } catch (error) {
       this.lastCheck = -Infinity;
       console.error('Could not check for TaskTick updates:', error);
-      this.setState(this.candidate ? 'available' : 'idle');
+      this.setState(
+        manual ? 'error' : this.candidate ? 'available' : 'idle',
+        manual ? 'Could not check for updates. Click to try again.' : undefined,
+      );
     }
   }
 

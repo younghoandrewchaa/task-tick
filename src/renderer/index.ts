@@ -352,14 +352,26 @@ function renderUpdate(update: UpdateState | undefined): void {
           ? 'Restarting…'
           : status === 'error'
             ? (update?.message ?? 'Update failed. Click to try again.')
-            : '';
-  button.hidden = !label;
-  button.disabled = status === 'confirming' || status === 'downloading' || status === 'installing';
-  button.textContent = status === 'error' ? '!' : '⤓';
+            : status === 'checking'
+              ? 'Checking for updates…'
+              : status === 'disabled'
+                ? 'Updates are unavailable in this build'
+                : 'Check for updates';
+  button.hidden = !update;
+  button.disabled =
+    status === 'disabled' ||
+    status === 'checking' ||
+    status === 'confirming' ||
+    status === 'downloading' ||
+    status === 'installing';
+  button.textContent = status === 'error' ? '!' : update?.latestVersion ? '⤓' : '↻';
   button.title = label;
   button.setAttribute('aria-label', label);
-  button.classList.toggle('busy', button.disabled);
+  button.classList.toggle('busy', button.disabled && status !== 'disabled');
   button.classList.toggle('error', status === 'error');
+  const feedback = el('update-status');
+  feedback.textContent = status === 'checking' ? label : (update?.message ?? '');
+  feedback.hidden = !feedback.textContent;
 }
 function accept(next: Snapshot): void {
   snapshot = next;
@@ -388,7 +400,12 @@ function fitPanel(): void {
   const height = Math.ceil(window.innerHeight - section.clientHeight + listTop + list.scrollHeight);
   if (height !== window.innerHeight) void api.fitPanel(height);
 }
-el('update').addEventListener('click', () => void api.installUpdate());
+el('update').addEventListener('click', () => {
+  const update = snapshot?.update;
+  if (update?.status === 'available' || (update?.status === 'error' && update.latestVersion))
+    void api.installUpdate();
+  else void api.checkForUpdates();
+});
 el('primary').addEventListener('click', () => {
   const s = snapshot?.state.session,
     task = currentTask();

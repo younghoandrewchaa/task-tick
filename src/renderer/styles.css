@@ -687,3 +687,8 @@ footer {
     padding-top: 10px;
   }
 }
+
+.update-status {
+  margin: 0;
+  padding: 0 24px 8px;
+}

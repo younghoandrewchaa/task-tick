@@ -36,6 +36,10 @@ export function registerIPC(
     trust(event);
     if (typeof height === 'number' && Number.isFinite(height)) panel.fit(height);
   });
+  ipcMain.handle('tasktick:check-updates', (event) => {
+    trust(event);
+    return updates.check(true);
+  });
   ipcMain.handle('tasktick:install-update', (event) => {
     trust(event);
     return updates.install();

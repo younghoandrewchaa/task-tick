@@ -68,6 +68,7 @@ export interface TaskTickAPI {
   hidePanel(): Promise<void>;
   fitPanel(height: number): Promise<void>;
   quit(): Promise<void>;
+  checkForUpdates(): Promise<void>;
   installUpdate(): Promise<void>;
 }
 export interface StateStore {

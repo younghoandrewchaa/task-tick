@@ -11,6 +11,7 @@ const api: TaskTickAPI = {
   hidePanel: () => ipcRenderer.invoke('tasktick:hide'),
   fitPanel: (height: number) => ipcRenderer.invoke('tasktick:fit', height),
   quit: () => ipcRenderer.invoke('tasktick:quit'),
+  checkForUpdates: () => ipcRenderer.invoke('tasktick:check-updates'),
   installUpdate: () => ipcRenderer.invoke('tasktick:install-update'),
 };
 contextBridge.exposeInMainWorld('tasktick', api);

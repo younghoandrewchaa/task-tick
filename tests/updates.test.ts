@@ -237,3 +237,59 @@ test('disabled builds report their version and never touch the network', async (
   assert.equal(calls.fetch, 0);
   assert.equal(native.feeds.length, 0);
 });
+
+test('manual checks bypass the daily cooldown and report when up to date', async () => {
+  const { manager, calls } = setup({
+    fetchRelease: async () => {
+      calls.fetch++;
+      return release('0.2.0');
+    },
+  });
+  await manager.check();
+  await manager.check(true);
+  assert.equal(calls.fetch, 2);
+  assert.equal(manager.getState().status, 'idle');
+  assert.equal(manager.getState().message, 'TaskTick is up to date.');
+});
+
+test('a failed manual check reports an error and can be retried', async () => {
+  let fail = true;
+  const { manager } = setup({
+    fetchRelease: async () => {
+      if (fail) throw new Error('offline');
+      return release('0.2.0');
+    },
+  });
+  const error = console.error;
+  console.error = () => {};
+  try {
+    await manager.check(true);
+    assert.equal(manager.getState().status, 'error');
+    assert.equal(manager.getState().message, 'Could not check for updates. Click to try again.');
+    fail = false;
+    await manager.check(true);
+    assert.equal(manager.getState().status, 'idle');
+  } finally {
+    console.error = error;
+  }
+});
+
+test('manual checks cannot overlap or run in disabled builds', async () => {
+  let finish: (value: unknown) => void = () => {};
+  const { manager, calls } = setup({
+    fetchRelease: () => {
+      calls.fetch++;
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    },
+  });
+  const first = manager.check(true);
+  await manager.check(true);
+  assert.equal(calls.fetch, 1);
+  finish(release());
+  await first;
+  const disabled = setup({ enabled: false });
+  await disabled.manager.check(true);
+  assert.equal(disabled.calls.fetch, 0);
+});
