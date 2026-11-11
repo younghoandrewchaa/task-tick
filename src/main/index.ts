@@ -28,6 +28,7 @@ else {
       const store = new FileStateStore(app.getPath('userData'));
       const loaded = await store.load();
       let notice = loaded.warning;
+      let noticeTimer: NodeJS.Timeout | undefined;
       let service: TaskService;
       let updates: UpdateManager | undefined;
       const snapshot = (): Snapshot => ({
@@ -47,9 +48,17 @@ else {
         id: randomUUID,
         onChange: publish,
         onExpiry: (e) => {
-          notice = `Session complete: ${e.taskTitle}`;
+          const message = `Session complete: ${e.taskTitle}`;
+          notice = message;
           panel!.notify(e);
           publish();
+          // Completion notices fade after a minute; error notices stay until dismissed.
+          clearTimeout(noticeTimer);
+          noticeTimer = setTimeout(() => {
+            if (notice !== message) return;
+            notice = undefined;
+            publish();
+          }, 60_000);
         },
       });
       const commands = new CommandController({

@@ -19,6 +19,7 @@ const input = el<HTMLInputElement>('new-task');
 function error(message: string): void {
   el('error').textContent = message;
   el('error').hidden = !message;
+  fitPanel();
 }
 function syncDurationControls(): void {
   document.querySelectorAll<HTMLSelectElement>('.task-row select').forEach((select) => {
@@ -372,9 +373,20 @@ function accept(next: Snapshot): void {
   el('notification-status').textContent =
     next.notificationStatus ?? 'Check macOS notification settings for TaskTick.';
   const notice = next.notice ?? '';
+  if (!notice) dismissedNotice = '';
   el('notice-text').textContent = notice;
   el('notice').hidden = !notice || notice === dismissedNotice;
   renderUpdate(next.update);
+  fitPanel();
+}
+/** Asks for enough window height to show every active task; the main process caps it. */
+function fitPanel(): void {
+  if (el('workspace').hidden) return;
+  const section = el('tasks').parentElement!,
+    list = el('tasks'),
+    listTop = list.getBoundingClientRect().top - section.getBoundingClientRect().top;
+  const height = Math.ceil(window.innerHeight - section.clientHeight + listTop + list.scrollHeight);
+  if (height !== window.innerHeight) void api.fitPanel(height);
 }
 el('update').addEventListener('click', () => void api.installUpdate());
 el('primary').addEventListener('click', () => {
@@ -403,11 +415,14 @@ el('hide').addEventListener('click', () => void api.hidePanel());
 el('dismiss-notice').addEventListener('click', () => {
   dismissedNotice = snapshot?.notice ?? '';
   el('notice').hidden = true;
+  fitPanel();
 });
+el('completed').addEventListener('toggle', fitPanel);
 function settings(show: boolean): void {
   el('workspace').hidden = show;
   el('settings').hidden = !show;
   if (show) el('back').focus();
+  else fitPanel();
 }
 el('settings-button').addEventListener('click', () => settings(el('settings').hidden !== false));
 el('back').addEventListener('click', () => settings(false));

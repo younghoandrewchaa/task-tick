@@ -9,6 +9,7 @@ const api: TaskTickAPI = {
     return () => ipcRenderer.removeListener('tasktick:snapshot', handler);
   },
   hidePanel: () => ipcRenderer.invoke('tasktick:hide'),
+  fitPanel: (height: number) => ipcRenderer.invoke('tasktick:fit', height),
   quit: () => ipcRenderer.invoke('tasktick:quit'),
   installUpdate: () => ipcRenderer.invoke('tasktick:install-update'),
 };

@@ -202,7 +202,14 @@ test('long task lists scroll, menus stay in view, drag reorder works, and both t
   const box = await menu.boundingBox();
   const height = await page.evaluate(() => innerHeight);
   expect(box!.y + box!.height).toBeLessThanOrEqual(height);
+  // The panel grows past its default height for long lists, but no further than 4/5 of the screen.
+  const workArea = await app!.evaluate(({ screen }) => screen.getPrimaryDisplay().workArea);
+  const base = Math.min(690, workArea.height - 24);
+  if (workArea.height * 0.8 > base) expect(height).toBeGreaterThan(base);
+  expect(height).toBeLessThanOrEqual(Math.ceil(workArea.height * 0.8));
   await page.getByRole('textbox', { name: 'New task title', exact: true }).click();
+  // Drag between rows that are both on screen, as a person would.
+  await page.locator('#tasks').evaluate((list) => (list.scrollTop = 0));
   await row('Task 2 with a longer title')
     .locator('.task-title')
     .dragTo(row('Task 1 with a longer title').locator('.task-title'));

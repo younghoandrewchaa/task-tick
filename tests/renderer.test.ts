@@ -62,6 +62,7 @@ async function fixture(t: { after(fn: () => void): void }) {
       };
     },
     hidePanel: async () => {},
+    fitPanel: async () => {},
     quit: async () => {},
     installUpdate: async () => {
       installs++;

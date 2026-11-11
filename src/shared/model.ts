@@ -66,6 +66,7 @@ export interface TaskTickAPI {
   dispatch(action: Action): Promise<CommandResult>;
   onSnapshot(listener: (snapshot: Snapshot) => void): () => void;
   hidePanel(): Promise<void>;
+  fitPanel(height: number): Promise<void>;
   quit(): Promise<void>;
   installUpdate(): Promise<void>;
 }

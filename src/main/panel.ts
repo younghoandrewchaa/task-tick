@@ -20,6 +20,7 @@ export class TaskPanel {
   private pendingShow = false;
   private locked = false;
   private quitting = false;
+  private contentHeight = 0;
   constructor(private changed: () => void) {
     const display = screen.getPrimaryDisplay().workAreaSize;
     this.window = new BrowserWindow({
@@ -107,10 +108,24 @@ export class TaskPanel {
       this.pendingShow = true;
       return;
     }
+    this.place();
+    this.window.show();
+    app.focus({ steal: true });
+    this.window.focus();
+    this.changed();
+  }
+  /** Grows the panel to fit its content, from the default height up to 4/5 of the screen. */
+  fit(height: number): void {
+    if (height === this.contentHeight) return;
+    this.contentHeight = height;
+    if (this.window.isVisible()) this.place();
+  }
+  private place(): void {
     const bounds = this.tray.getBounds();
     const area = screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y }).workArea;
     const [width] = this.window.getSize();
-    const height = Math.min(690, area.height - 24);
+    const base = Math.min(690, area.height - 24);
+    const height = Math.round(Math.max(base, Math.min(this.contentHeight, area.height * 0.8)));
     this.window.setBounds({
       x: Math.max(
         area.x + 8,
@@ -123,10 +138,6 @@ export class TaskPanel {
       width,
       height,
     });
-    this.window.show();
-    app.focus({ steal: true });
-    this.window.focus();
-    this.changed();
   }
   hide(): void {
     if (!this.dialogOpen) this.window.hide();
