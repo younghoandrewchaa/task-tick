@@ -51,7 +51,7 @@ async function running() {
 }
 test('concurrent expiry checks save once before effects and publish one credit', async () => {
   const f = await running();
-  f.time(901000);
+  f.time(1201000);
   f.events.length = 0;
   await Promise.all([f.service.reconcile(), f.service.reconcile(), f.service.reconcile()]);
   assert.equal(f.disk().tasks[0].sessionCount, 1);
@@ -71,7 +71,7 @@ test('startup and wake reconcile overdue state without re-credit on reload', asy
 test('failed save preserves live and disk state and emits no expiry; retry can credit', async () => {
   const f = await running();
   f.fail();
-  f.time(901000);
+  f.time(1201000);
   await assert.rejects(() => f.service.reconcile(), /Disk full/);
   assert.equal(f.service.snapshot().state.tasks[0].sessionCount, 0);
   assert.equal(f.disk().tasks[0].sessionCount, 0);
@@ -82,7 +82,7 @@ test('failed save preserves live and disk state and emits no expiry; retry can c
 test('expired session is credited before stale action rejects, and queue survives errors', async () => {
   const f = await running();
   const sessionId = f.service.snapshot().state.session!.id;
-  f.time(901000);
+  f.time(1201000);
   await assert.rejects(() => f.service.dispatch({ type: 'pause', sessionId }));
   assert.equal(f.service.snapshot().state.tasks[0].sessionCount, 1);
   await f.service.dispatch({ type: 'rename', taskId: f.taskId, title: 'Renamed' });
@@ -90,7 +90,7 @@ test('expired session is credited before stale action rejects, and queue survive
 });
 test('completion at deadline credits first; partial completion does not', async () => {
   const f = await running();
-  f.time(901000);
+  f.time(1201000);
   await f.service.dispatch({ type: 'complete', taskId: f.taskId });
   assert.equal(f.disk().tasks[0].sessionCount, 1);
   assert.equal(f.disk().session, null);
@@ -108,7 +108,7 @@ test('paused reload retains remaining time and snapshot mutation cannot change s
   restarted.time(99999999);
   await restarted.service.reconcile();
   const snap = restarted.service.snapshot();
-  assert.equal(snap.state.session?.status === 'paused' && snap.state.session.remainingMs, 840000);
+  assert.equal(snap.state.session?.status === 'paused' && snap.state.session.remainingMs, 1140000);
   snap.state.tasks[0].title = 'External mutation';
   assert.equal(restarted.service.snapshot().state.tasks[0].title, 'Draft');
 });

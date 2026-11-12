@@ -14,11 +14,11 @@ const action = (s: AppState, a: Action, now = 1000) => applyAction(s, a, now, id
 function withTask() {
   return action(emptyState(), { type: 'add', title: '  Write a chapter  ' });
 }
-test('creates trimmed tasks with 15 minute defaults and distinct duplicate titles', () => {
+test('creates trimmed tasks with 20 minute defaults and distinct duplicate titles', () => {
   let s = withTask();
   s = action(s, { type: 'add', title: 'Write a chapter' });
   assert.equal(s.tasks[0].title, 'Write a chapter');
-  assert.equal(s.tasks[0].durationMinutes, 15);
+  assert.equal(s.tasks[0].durationMinutes, 20);
   assert.equal(s.tasks[0].sessionCount, 0);
   assert.notEqual(s.tasks[0].id, s.tasks[1].id);
 });
@@ -70,10 +70,10 @@ test('pause freezes remaining time; resume starts from remaining time; stale com
   s = action(s, { type: 'start', taskId: s.tasks[0].id });
   const sid = s.session!.id;
   s = action(s, { type: 'pause', sessionId: sid }, 61000);
-  assert.equal(s.session?.status === 'paused' && s.session.remainingMs, 840000);
+  assert.equal(s.session?.status === 'paused' && s.session.remainingMs, 1140000);
   assert.equal(reconcile(s, 99999999).state.tasks[0].sessionCount, 0);
   s = action(s, { type: 'resume', sessionId: sid }, 2000000);
-  assert.equal(s.session?.status === 'running' && s.session.deadline, 2840000);
+  assert.equal(s.session?.status === 'running' && s.session.deadline, 3140000);
   assert.throws(() => action(s, { type: 'discard', sessionId: 'old' }));
   assert.throws(() => action(s, { type: 'duration', taskId: s.tasks[0].id, minutes: 30 }));
   s = action(s, { type: 'discard', sessionId: sid });
@@ -127,4 +127,19 @@ test('validates persisted structure and rejects unknown IPC actions and malforme
   ])
     assert.throws(() => validateAction(bad));
   assert.deepEqual(validateAction({ type: 'add', title: 'Test' }), { type: 'add', title: 'Test' });
+});
+
+test('new tasks use the configured default duration', () => {
+  let s = action(emptyState(), { type: 'defaultDuration', minutes: 30 });
+  assert.equal(s.settings.defaultDuration, 30);
+  s = action(s, { type: 'add', title: 'Long one' });
+  assert.equal(s.tasks[0].durationMinutes, 30);
+  assert.throws(() => action(s, { type: 'defaultDuration', minutes: 7 as never }));
+});
+test('saved data without a default duration loads with 20 minutes', () => {
+  const legacy = { version: 1, tasks: [], session: null, settings: { launchAtLogin: true } };
+  assert.equal(validateState(legacy).settings.defaultDuration, 20);
+  assert.throws(() =>
+    validateState({ ...legacy, settings: { launchAtLogin: true, defaultDuration: 12 } }),
+  );
 });

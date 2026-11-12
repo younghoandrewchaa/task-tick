@@ -1,4 +1,4 @@
-import type { Action, Snapshot, Task, TaskTickAPI, UpdateState } from '../shared/model';
+import type { Action, Duration, Snapshot, Task, TaskTickAPI, UpdateState } from '../shared/model';
 declare global {
   interface Window {
     tasktick: TaskTickAPI;
@@ -28,6 +28,9 @@ function syncDurationControls(): void {
     if (task) select.value = String(task.durationMinutes);
     select.disabled = busy || snapshot?.state.session?.taskId === taskId;
   });
+  const fallback = el<HTMLSelectElement>('default-duration');
+  if (snapshot) fallback.value = String(snapshot.state.settings.defaultDuration);
+  fallback.disabled = busy;
 }
 function setBusy(value: boolean): void {
   busy = value;
@@ -172,7 +175,7 @@ function row(task: Task, completed = false): HTMLElement {
         void dispatch({
           type: 'duration',
           taskId: task.id,
-          minutes: Number(select.value) as 15 | 20 | 25 | 30,
+          minutes: Number(select.value) as Duration,
         }),
     );
     meta.append(dot, select);
@@ -305,7 +308,7 @@ function renderTimer(): void {
       ? session.status === 'running'
         ? session.deadline - Date.now()
         : session.remainingMs
-      : (task?.durationMinutes ?? 15) * 60000;
+      : (task?.durationMinutes ?? snapshot?.state.settings.defaultDuration ?? 20) * 60000;
   const seconds = Math.max(0, Math.ceil(ms / 1000));
   el('timer').replaceChildren(
     document.createTextNode(String(Math.floor(seconds / 60)).padStart(2, '0')),
@@ -447,6 +450,10 @@ el<HTMLInputElement>('login').addEventListener('change', async (e) => {
   const enabled = (e.target as HTMLInputElement).checked;
   if (!(await dispatch({ type: 'login', enabled })))
     el<HTMLInputElement>('login').checked = snapshot?.state.settings.launchAtLogin ?? false;
+});
+el<HTMLSelectElement>('default-duration').addEventListener('change', (e) => {
+  const minutes = Number((e.target as HTMLSelectElement).value) as Duration;
+  void dispatch({ type: 'defaultDuration', minutes }).then(syncDurationControls);
 });
 el('quit').addEventListener('click', () => void api.quit());
 document.addEventListener('keydown', (e) => {

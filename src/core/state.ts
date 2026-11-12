@@ -1,4 +1,5 @@
 import {
+  DEFAULT_DURATION,
   DURATIONS,
   type Action,
   type AppState,
@@ -6,7 +7,12 @@ import {
   type Transition,
 } from '../shared/model';
 export function emptyState(): AppState {
-  return { version: 1, tasks: [], session: null, settings: { launchAtLogin: false } };
+  return {
+    version: 1,
+    tasks: [],
+    session: null,
+    settings: { launchAtLogin: false, defaultDuration: DEFAULT_DURATION },
+  };
 }
 function check(condition: unknown, message = 'Invalid data'): asserts condition {
   if (!condition) throw new Error(message);
@@ -28,7 +34,9 @@ export function validateState(value: unknown): AppState {
   check(
     Array.isArray(value.tasks) &&
       record(value.settings) &&
-      typeof value.settings.launchAtLogin === 'boolean',
+      typeof value.settings.launchAtLogin === 'boolean' &&
+      // Saved data from before the default-duration setting has no value yet.
+      (value.settings.defaultDuration === undefined || duration(value.settings.defaultDuration)),
   );
   const ids = new Set<string>();
   for (const task of value.tasks) {
@@ -53,7 +61,9 @@ export function validateState(value: unknown): AppState {
       'Invalid session',
     );
   }
-  return structuredClone(value) as unknown as AppState;
+  const state = structuredClone(value) as unknown as AppState;
+  state.settings.defaultDuration ??= DEFAULT_DURATION;
+  return state;
 }
 export function validateAction(value: unknown): Action {
   check(record(value) && text(value.type), 'Invalid command');
@@ -86,6 +96,9 @@ export function validateAction(value: unknown): Action {
       break;
     case 'login':
       check(typeof value.enabled === 'boolean');
+      break;
+    case 'defaultDuration':
+      check(duration(value.minutes), 'Choose 15, 20, 25 or 30 minutes');
       break;
     default:
       throw new Error('Unknown command');
@@ -123,7 +136,7 @@ export function applyAction(
       s.tasks.push({
         id: id(),
         title: a.title.trim(),
-        durationMinutes: 15,
+        durationMinutes: s.settings.defaultDuration,
         sessionCount: 0,
         completedAt: null,
       });
@@ -199,6 +212,9 @@ export function applyAction(
       break;
     case 'login':
       s.settings.launchAtLogin = a.enabled;
+      break;
+    case 'defaultDuration':
+      s.settings.defaultDuration = a.minutes;
       break;
   }
   return s;

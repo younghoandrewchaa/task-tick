@@ -71,7 +71,7 @@ function seeded(deadline: number) {
       status: 'running',
       deadline,
     },
-    settings: { launchAtLogin: false },
+    settings: { launchAtLogin: false, defaultDuration: 20 },
   };
 }
 test.beforeEach(async () => {
@@ -86,9 +86,9 @@ test('task list supports presets, literal titles, rename, reorder, complete, reo
   await launch();
   await add('Write <chapter> & notes');
   await add('Review');
-  await expect(row('Write <chapter> & notes').getByRole('combobox')).toHaveValue('15');
-  await row('Write <chapter> & notes').getByRole('combobox').selectOption('20');
   await expect(row('Write <chapter> & notes').getByRole('combobox')).toHaveValue('20');
+  await row('Write <chapter> & notes').getByRole('combobox').selectOption('25');
+  await expect(row('Write <chapter> & notes').getByRole('combobox')).toHaveValue('25');
   await page.getByLabel('Actions for Review', { exact: true }).click();
   await page.getByRole('button', { name: 'Rename', exact: true }).click();
   await page.getByRole('textbox', { name: 'Rename task' }).press('Meta+A');
@@ -115,7 +115,7 @@ test('task list supports presets, literal titles, rename, reorder, complete, reo
   await expect(row('Write <chapter> & notes')).toBeVisible();
   const disk = JSON.parse(await readFile(join(directory, 'state.json'), 'utf8'));
   expect(disk.tasks[0].title).toBe('Write <chapter> & notes');
-  expect(disk.tasks[0].durationMinutes).toBe(20);
+  expect(disk.tasks[0].durationMinutes).toBe(25);
 });
 test('pause, cancelled and confirmed switching, and discard obey the single-timer rule', async () => {
   await launch();

@@ -614,6 +614,14 @@ footer {
   width: 17px;
   height: 17px;
 }
+.setting-select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  padding: 3px 6px;
+}
 .setting-block {
   border-top: 1px solid var(--line);
   padding: 20px 0 4px;

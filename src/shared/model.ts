@@ -1,5 +1,6 @@
 export const DURATIONS = [15, 20, 25, 30] as const;
 export type Duration = (typeof DURATIONS)[number];
+export const DEFAULT_DURATION: Duration = 20;
 export interface Task {
   id: string;
   title: string;
@@ -18,7 +19,7 @@ export interface AppState {
   version: 1;
   tasks: Task[];
   session: Session | null;
-  settings: { launchAtLogin: boolean };
+  settings: { launchAtLogin: boolean; defaultDuration: Duration };
 }
 export interface Expiry {
   sessionId: string;
@@ -38,7 +39,8 @@ export type Action =
   | { type: 'start'; taskId: string }
   | { type: 'switch'; taskId: string; sessionId: string }
   | { type: 'pause' | 'resume' | 'discard'; sessionId: string }
-  | { type: 'login'; enabled: boolean };
+  | { type: 'login'; enabled: boolean }
+  | { type: 'defaultDuration'; minutes: Duration };
 export interface Snapshot {
   state: AppState;
   now: number;

@@ -64,7 +64,7 @@ test('expiry during switch confirmation cannot start an unconfirmed replacement'
   );
   const pending = f.commands.execute({ type: 'start', taskId: f.b.id });
   await new Promise((resolve) => setImmediate(resolve));
-  f.time(901000);
+  f.time(1201000);
   await f.service.reconcile();
   release(true);
   const result = await pending;

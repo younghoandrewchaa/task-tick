@@ -223,3 +223,12 @@ test('disabled builds show why the update button is unavailable', async (t) => {
   button.click();
   assert.equal(f.checks(), 0);
 });
+test('settings change the default duration used for new tasks', async (t) => {
+  const f = await fixture(t);
+  const select = f.document.getElementById('default-duration') as HTMLSelectElement;
+  assert.equal(select.value, '20');
+  select.value = '25';
+  select.dispatchEvent(new f.window.Event('change', { bubbles: true }));
+  await until(() => f.service.snapshot().state.settings.defaultDuration === 25);
+  assert.equal(select.value, '25');
+});
