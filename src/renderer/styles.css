@@ -173,11 +173,19 @@ main {
   font-size: 11px;
   margin: 3px 0 18px;
 }
+/* Primary stays centred; Discard sits in the right column without shifting it. */
 .timer-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
+  column-gap: 16px;
+}
+.timer-actions .primary-button {
+  grid-column: 2;
+}
+.timer-actions .text-button {
+  grid-column: 3;
+  justify-self: start;
 }
 .primary-button {
   background: var(--accent);
