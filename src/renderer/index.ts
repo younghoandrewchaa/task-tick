@@ -378,6 +378,8 @@ function renderUpdate(update: UpdateState | undefined): void {
 }
 function accept(next: Snapshot): void {
   snapshot = next;
+  // Keep the session's task selected so it stays focused after the timer ends.
+  if (next.state.session) selectedId = next.state.session.taskId;
   const key = JSON.stringify(next.state);
   if (key !== stateKey) {
     stateKey = key;
