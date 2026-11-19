@@ -33,7 +33,7 @@ const signing = release
       },
       osxNotarize: env.APPLE_ID
         ? { appleId: env.APPLE_ID, appleIdPassword: password, teamId: env.APPLE_TEAM_ID }
-        : { keychainProfile: env.APPLE_KEYCHAIN_PROFILE || 'deepeyes' },
+        : { keychainProfile: env.APPLE_KEYCHAIN_PROFILE || 'app-signing-profile' },
     }
   : {};
 
