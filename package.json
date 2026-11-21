@@ -10,19 +10,39 @@
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.renderer.json && node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.renderer.json --noEmit && tsc -p tsconfig.e2e.json",
     "test": "npm run build && tsc -p tsconfig.test.json && node --test dist-test/tests/*.test.js",
-    "package": "npm run build && node scripts/package.mjs",
+    "package": "npm run build && electron-mac-release package",
     "test:e2e": "npm run build && playwright test",
     "format": "prettier --write src tests e2e scripts *.json playwright.config.ts",
-    "release": "bash scripts/release.sh"
+    "release": "electron-mac-release release"
   },
   "devDependencies": {
-    "@electron/packager": "^20.3.0",
     "@playwright/test": "^1.65.0",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^26.6.6",
     "electron": "^45.2.3",
+    "electron-mac-release": "^1.0.0",
     "jsdom": "^31.0.0",
     "prettier": "^3.9.10",
     "typescript": "^7.0.2"
+  },
+  "macRelease": {
+    "include": [
+      "dist"
+    ],
+    "preRelease": [
+      "npm test",
+      "npm run typecheck",
+      "npm run build"
+    ],
+    "packager": {
+      "appBundleId": "dev.youngho.tasktick",
+      "appCategoryType": "public.app-category.productivity",
+      "asar": false,
+      "icon": "dist/assets/app.icns",
+      "extendInfo": {
+        "LSUIElement": true,
+        "NSHighResolutionCapable": true
+      }
+    }
   }
 }

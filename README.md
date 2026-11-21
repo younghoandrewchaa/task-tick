@@ -33,7 +33,7 @@ To publish a release, bump `version` in `package.json`, commit, then on an Apple
 npm run release -- "What changed"
 ```
 
-The script runs the checks, signs and notarises the app with your Developer ID (`APPLE_SIGN_IDENTITY` optional; `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD` and `APPLE_TEAM_ID`, or the keychain profile in `APPLE_KEYCHAIN_PROFILE`, default `m-note`), zips it as `TaskTick-darwin-arm64-<version>.zip`, writes the update manifest, tags `v<version>` and publishes both files as the latest GitHub release.
+Releases use the shared [`electron-mac-release`](https://www.npmjs.com/package/electron-mac-release) package, configured in the `macRelease` block of `package.json`. It runs the checks, signs and notarises the app with your Developer ID (`APPLE_SIGN_IDENTITY` optional; `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD` and `APPLE_TEAM_ID`, or the keychain profile in `APPLE_KEYCHAIN_PROFILE`, default `app-signing-profile`), zips it as `TaskTick-darwin-arm64-<version>.zip`, writes the update manifest, tags `v<version>` and publishes both files as the latest GitHub release.
 
 First install: download the ZIP from the latest release, double-click it, and move `TaskTick.app` to Applications. Later versions install themselves. Builds older than 0.2.0 are unsigned and cannot update themselves.
 
@@ -56,7 +56,7 @@ Escape or clicking elsewhere hides the panel while the app stays in the menu bar
 - If both state and backup are unreadable, TaskTick reports the location and leaves them untouched. Save errors are visible and do not silently count an unsaved session.
 - Session credit is persisted before a notification is attempted. A crash between these steps can lose an alert, but does not duplicate credit.
 
-For offline packaging, `TASKTICK_ELECTRON_ZIP_DIR` can point to a directory containing the matching official Electron ZIP (`electron-v<version>-darwin-<arch>.zip`). Otherwise the packager downloads it normally.
+For offline packaging, `ELECTRON_MAC_RELEASE_ZIP_DIR` can point to a directory containing the matching official Electron ZIP (`electron-v<version>-darwin-<arch>.zip`). Otherwise the packager downloads it normally.
 
 For an isolated development run, set `TASKTICK_DATA_DIR` to an absolute disposable directory. Never run two app builds against the same data directory.
 
