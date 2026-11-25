@@ -180,6 +180,15 @@ function row(task: Task, completed = false): HTMLElement {
     );
     meta.append(dot, select);
   }
+  if (task.sessionCount > 0) {
+    const ticks = document.createElement('div');
+    ticks.className = 'session-ticks';
+    ticks.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < task.sessionCount; i++) {
+      ticks.append(document.createElement('span'));
+    }
+    content.append(ticks);
+  }
   content.append(meta);
   wrapper.append(content);
   const actions = document.createElement('div');

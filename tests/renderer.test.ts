@@ -22,7 +22,7 @@ async function fixture(t: { after(fn: () => void): void }) {
   const state = emptyState();
   state.tasks = [
     { id: 'a', title: 'Alpha', durationMinutes: 15, sessionCount: 0, completedAt: null },
-    { id: 'b', title: 'Beta', durationMinutes: 15, sessionCount: 0, completedAt: null },
+    { id: 'b', title: 'Beta', durationMinutes: 15, sessionCount: 3, completedAt: null },
   ];
   let fail = false,
     installs = 0,
@@ -97,6 +97,12 @@ async function fixture(t: { after(fn: () => void): void }) {
       listeners.forEach((listener) => listener({ ...service.snapshot(), update })),
   };
 }
+test('each task shows one tick per completed session', async (t) => {
+  const f = await fixture(t);
+  const [alpha, beta] = f.document.querySelectorAll('.task-row');
+  assert.equal(alpha.querySelector('.session-ticks'), null);
+  assert.equal(beta.querySelectorAll('.session-ticks span').length, 3);
+});
 test('a failed duration save restores the authoritative preset before starting', async (t) => {
   const f = await fixture(t);
   f.fail();

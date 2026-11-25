@@ -319,6 +319,19 @@ h2 {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+.session-ticks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 5px;
+}
+.session-ticks span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.45;
+}
 .meta-dot {
   height: 2px;
   width: 2px;
