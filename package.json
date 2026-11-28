@@ -7,12 +7,12 @@
   "main": "dist/main/index.js",
   "scripts": {
     "dev": "npm run build && electron .",
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.renderer.json && node scripts/build.mjs",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.renderer.json && electron-mac-release prepare",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.renderer.json --noEmit && tsc -p tsconfig.e2e.json",
     "test": "npm run build && tsc -p tsconfig.test.json && node --test dist-test/tests/*.test.js",
     "package": "npm run build && electron-mac-release package",
     "test:e2e": "npm run build && playwright test",
-    "format": "prettier --write src tests e2e scripts *.json playwright.config.ts",
+    "format": "prettier --write src tests e2e *.json playwright.config.ts",
     "release": "electron-mac-release release"
   },
   "devDependencies": {
@@ -20,12 +20,17 @@
     "@types/jsdom": "^30.0.0",
     "@types/node": "^26.6.6",
     "electron": "^45.2.3",
-    "electron-mac-release": "^1.0.0",
+    "electron-mac-release": "^1.0.2",
     "jsdom": "^31.0.0",
     "prettier": "^3.9.10",
     "typescript": "^7.0.2"
   },
   "macRelease": {
+    "assets": {
+      "src/renderer/index.html": "dist/renderer/index.html",
+      "src/renderer/styles.css": "dist/renderer/styles.css",
+      "src/assets": "dist/assets"
+    },
     "include": [
       "dist"
     ],
